@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-
 	//    "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	// "context"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	//"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
+	"github.com/mattytmn/azurenum/internal"
 )
 
 const subscriptionID = "0be01d84-8432-4558-9aba-ecd204a3ee61"
@@ -24,48 +24,43 @@ func main() {
 	// 	fmt.Println(&cred)
 	// }
 
-	// client, _ := GetAuthz()
+	// client, _ := GetCredential()
 	// fmt.Println(client)
-	fmt.Println(GetTenantClients())
-}
-
-func GetAuthz() (*azidentity.DefaultAzureCredential, error) {
-	client, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Fatalf("authentication to Azure failed with: %v", err)
+	tenants := GetTenantID()
+	fmt.Println(tenants)
+	for _, v := range tenants {
+		fmt.Println(*v.TenantID)
 	}
-	return client, nil
 }
 
-func GetTenantClients() []armsubscription.TenantIDDescription {
-	cred, _ := GetAuthz()
+func GetTenantID() []armsubscriptions.TenantIDDescription {
+	cred, _ := internal.GetCredential()
 	// var result armsubscription.TenantIDDescription
-	ctx := context.Background()
-	clientFactory, err := armsubscription.NewClientFactory(cred, nil)
+	// ctx := context.Background()
+	clientFactory, err := armsubscriptions.NewClientFactory(cred, nil)
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
 
+	ctx := context.TODO()
 	pager := clientFactory.NewTenantsClient().NewListPager(nil)
-	var result []armsubscription.TenantIDDescription
+	var result []armsubscriptions.TenantIDDescription
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
-		fmt.Printf("%T\n", page)
-		fmt.Printf("%T\n", page.TenantListResult)
 
 		if err != nil {
 			log.Fatalf("failed to advance page: %v", err)
 		}
 		for _, v := range page.Value {
-			fmt.Printf("%T \n", *v.TenantID)
-			result = append(result, *v)
+			fmt.Printf("%v \n", *v.DefaultDomain)
+			result = append(result)
 		}
 	}
 	return result
 }
 
-func GetTenants() armsubscription.TenantListResult {
-	var result armsubscription.TenantListResult
+func GetTenants() armsubscriptions.TenantListResult {
+	var result armsubscriptions.TenantListResult
 
 	return result
 }
