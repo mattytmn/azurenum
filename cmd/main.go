@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -23,29 +24,44 @@ func main() {
 	// 	fmt.Println(&cred)
 	// }
 
-	client, _ := GetAuthz()
-	fmt.Println(client)
-
+	// client, _ := GetAuthz()
+	// fmt.Println(client)
+	fmt.Println(GetTenantClients())
 }
 
 func GetAuthz() (*azidentity.DefaultAzureCredential, error) {
-
 	client, err := azidentity.NewDefaultAzureCredential(nil)
-
 	if err != nil {
-		return nil, fmt.Errorf("Authentication to Azure failed with: %s", err)
+		log.Fatalf("authentication to Azure failed with: %v", err)
 	}
 	return client, nil
 }
 
-func GetTenantClient() armsubscription.TenantsClient {
+func GetTenantClients() []armsubscription.TenantIDDescription {
 	cred, _ := GetAuthz()
 	// var result armsubscription.TenantIDDescription
-	client, err := armsubscription.NewTenantsClient(cred, nil)
+	ctx := context.Background()
+	clientFactory, err := armsubscription.NewClientFactory(cred, nil)
 	if err != nil {
-		log.Fatalf("Failed to fetch tenant information: %s", err)
+		log.Fatalf("failed to create client: %v", err)
 	}
-	return *client
+
+	pager := clientFactory.NewTenantsClient().NewListPager(nil)
+	var result []armsubscription.TenantIDDescription
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		fmt.Printf("%T\n", page)
+		fmt.Printf("%T\n", page.TenantListResult)
+
+		if err != nil {
+			log.Fatalf("failed to advance page: %v", err)
+		}
+		for _, v := range page.Value {
+			fmt.Printf("%T \n", *v.TenantID)
+			result = append(result, *v)
+		}
+	}
+	return result
 }
 
 func GetTenants() armsubscription.TenantListResult {
@@ -55,7 +71,6 @@ func GetTenants() armsubscription.TenantListResult {
 }
 
 func GetTenantSubscriptions() {
-
 }
 
 // client, err := armsubscription.NewSubscriptionsClient(cred, nil)
