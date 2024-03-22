@@ -12,10 +12,8 @@ import (
 	"github.com/mattytmn/azurenum/internal"
 )
 
-const subscriptionID = "0be01d84-8432-4558-9aba-ecd204a3ee61"
-
 func main() {
-	fmt.Println("Fetching Azure Resources")
+	fmt.Println("fetching azure aesources")
 	// cred, err := azidentity.NewDefaultAzureCredential(nil)
 	// if err != nil {
 	// 	// TODO: handle
@@ -26,14 +24,14 @@ func main() {
 
 	// client, _ := GetCredential()
 	// fmt.Println(client)
-	tenants := GetTenantID()
+	tenants := GetTenants()
 	fmt.Println(tenants)
 	for _, v := range tenants {
-		fmt.Println(*v.TenantID)
+		fmt.Println(*v.TenantID, *v.DisplayName)
 	}
 }
 
-func GetTenantID() []armsubscriptions.TenantIDDescription {
+func GetTenants() []*armsubscriptions.TenantIDDescription {
 	cred, _ := internal.GetCredential()
 	// var result armsubscription.TenantIDDescription
 	// ctx := context.Background()
@@ -44,28 +42,21 @@ func GetTenantID() []armsubscriptions.TenantIDDescription {
 
 	ctx := context.TODO()
 	pager := clientFactory.NewTenantsClient().NewListPager(nil)
-	var result []armsubscriptions.TenantIDDescription
+	var result []*armsubscriptions.TenantIDDescription
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
-
 		if err != nil {
 			log.Fatalf("failed to advance page: %v", err)
 		}
 		for _, v := range page.Value {
 			fmt.Printf("%v \n", *v.DefaultDomain)
-			result = append(result)
+			result = append(result, v)
 		}
 	}
 	return result
 }
 
-func GetTenants() armsubscriptions.TenantListResult {
-	var result armsubscriptions.TenantListResult
-
-	return result
-}
-
-func GetTenantSubscriptions() {
+func GetSubscription() {
 }
 
 // client, err := armsubscription.NewSubscriptionsClient(cred, nil)
