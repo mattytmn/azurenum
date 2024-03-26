@@ -7,7 +7,6 @@ import (
 
 	//    "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	// "context"
-	//"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 	"github.com/mattytmn/azurenum/internal"
 )
@@ -29,6 +28,7 @@ func main() {
 	for _, v := range tenants {
 		fmt.Println(*v.TenantID, *v.DisplayName)
 	}
+	GetSubscriptions()
 }
 
 func GetTenants() []*armsubscriptions.TenantIDDescription {
@@ -56,7 +56,27 @@ func GetTenants() []*armsubscriptions.TenantIDDescription {
 	return result
 }
 
-func GetSubscription() {
+func GetSubscriptions() []*armsubscriptions.Subscription {
+	cred, _ := internal.GetCredential()
+	ctx := context.TODO()
+	var result []*armsubscriptions.Subscription
+	clientFactory, err := armsubscriptions.NewClientFactory(cred, nil)
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+	pager := clientFactory.NewClient().NewListPager(nil)
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			log.Fatalf("failed to advance page: %v", err)
+		}
+		for _, v := range page.Value {
+			fmt.Printf("%v \n", *v.DisplayName)
+			result = append(result, v)
+		}
+	}
+
+	return result
 }
 
 // client, err := armsubscription.NewSubscriptionsClient(cred, nil)
