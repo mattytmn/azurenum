@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("fetching azure aesources")
+	fmt.Println("fetching azure resources")
 	// cred, err := azidentity.NewDefaultAzureCredential(nil)
 	// if err != nil {
 	// 	// TODO: handle
