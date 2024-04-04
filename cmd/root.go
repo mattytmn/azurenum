@@ -46,6 +46,10 @@ var (
 		Short: "Get all blobs",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("getting blobs...")
+			err := pkg.AzBlobs()
+			if err != nil {
+				log.Fatal(err)
+			}
 			// err := pkg.GetBl
 		},
 	}
