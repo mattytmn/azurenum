@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mattytmn/azurenum/internal"
 	"github.com/mattytmn/azurenum/pkg"
 	"github.com/spf13/cobra"
 )
@@ -11,6 +12,7 @@ import (
 var (
 	AzTenant       string
 	AzSubscription string
+	AzAuth, _      = internal.GetCredential()
 
 	AzTenantsCmd = &cobra.Command{
 		Use:     "tenants",
@@ -18,7 +20,7 @@ var (
 		Long:    `Get all available Azure tenant IDs and display names`,
 		Short:   "Get all tenants",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := pkg.GetTenants()
+			err := pkg.GetTenants(AzAuth)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -31,7 +33,7 @@ var (
 		Long:    `Get all available Azure subscriptions and display names`,
 		Short:   "Get all subscriptions",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := pkg.GetSubscriptions(AzSubscription)
+			err := pkg.GetSubscriptions(AzAuth)
 			if err != nil {
 				log.Fatalf("An error occurred: %v", err)
 			}
@@ -46,6 +48,10 @@ var (
 		Short: "Get all blobs",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("getting blobs...")
+			err := pkg.AzBlobs(AzAuth)
+			if err != nil {
+				log.Fatal(err)
+			}
 			// err := pkg.GetBl
 		},
 	}
