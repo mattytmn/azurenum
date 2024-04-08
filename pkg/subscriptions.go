@@ -69,7 +69,7 @@ func GetSubscriptions(AzCred *azidentity.DefaultAzureCredential) []*armsubscript
 			log.Fatalf("failed to advance page: %v", err)
 		}
 		for _, v := range page.Value {
-			fmt.Printf("%v \n", *v.DisplayName)
+			fmt.Printf("%v \n", *v.SubscriptionID)
 			result = append(result, v)
 		}
 	}

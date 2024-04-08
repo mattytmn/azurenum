@@ -12,24 +12,30 @@ import (
 func AzBlobs(AzCred *azidentity.DefaultAzureCredential) error {
 	// cred, _ := internal.GetCredential()
 
+	// Iterate through all subscription to get all Storage Accounts
 	subscriptions := GetSubscriptions(AzCred)
-	for _, sub := range subscriptions {
+	for index, sub := range subscriptions {
+		fmt.Printf("currently in subscription: %d of %d \n", index+1, len(subscriptions))
 		subscriptionId := *sub.SubscriptionID
 		clientFactory, err := armstorage.NewClientFactory(subscriptionId, AzCred, nil)
 		if err != nil {
-			log.Fatalf("Error occurred in Blobs... %v", err)
+			log.Fatalf("failed to create client: %v \n", err)
 		}
 		pager := clientFactory.NewAccountsClient().NewListPager(nil)
 		ctx := context.TODO()
 		for pager.More() {
 			page, err := pager.NextPage(ctx)
 			if err != nil {
-				return err
+				log.Printf("Error occurred getting blobs for subscription... %v", err)
+
+				// Go to the next subscription if an error or no storage accounts are returned
+				break
 			}
 			// Return all storage accounts for given subscription
 			for _, v := range page.Value {
-				fmt.Printf("%v \n", *v.Name)
-				fmt.Printf("%v \n", *v.Properties.NetworkRuleSet.DefaultAction)
+				if v.Properties.PublicNetworkAccess != nil {
+					fmt.Printf("%v | %v | %v \n", *v.Name, *v.Properties.NetworkRuleSet.DefaultAction, *v.Properties.PublicNetworkAccess)
+				}
 			}
 
 		}
