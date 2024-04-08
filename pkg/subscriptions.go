@@ -1,4 +1,4 @@
-package cmd
+package pkg
 
 import (
 	"context"
@@ -9,25 +9,25 @@ import (
 	"github.com/mattytmn/azurenum/internal"
 )
 
-func main() {
-	fmt.Println("fetching azure resources")
-	// cred, err := azidentity.NewDefaultAzureCredential(nil)
-	// if err != nil {
-	// 	// TODO: handle
-	// 	fmt.Println("Auth error")
-	// } else {
-	// 	fmt.Println(&cred)
-	// }
+// func main() {
+//	fmt.Println("fetching azure resources")
+// cred, err := azidentity.NewDefaultAzureCredential(nil)
+// if err != nil {
+// 	// TODO: andl
+// 	fmt.Println("Auth error")
+// } else {
+// 	fmt.Println(&cred)
+// }
 
-	// client, _ := GetCredential()
-	// fmt.Println(client)
-	tenants := GetTenants()
-	fmt.Println(tenants)
-	for _, v := range tenants {
-		fmt.Println(*v.TenantID, *v.DisplayName)
-	}
-	GetSubscriptions()
-}
+// client, _ := GetCredential()
+// fmt.Println(client)
+//	tenants := GetTenants()
+//	fmt.Println(tenants)
+//	for _, v := range tenants {
+//		fmt.Println(*v.TenantID, *v.DisplayName)
+//	}
+//	GetSubscriptions()
+//}
 
 func GetTenants() []*armsubscriptions.TenantIDDescription {
 	cred, _ := internal.GetCredential()
@@ -54,7 +54,8 @@ func GetTenants() []*armsubscriptions.TenantIDDescription {
 	return result
 }
 
-func GetSubscriptions() []*armsubscriptions.Subscription {
+func GetSubscriptions(AzSubscription string) []*armsubscriptions.Subscription {
+	fmt.Println(AzSubscription)
 	cred, _ := internal.GetCredential()
 	ctx := context.TODO()
 	var result []*armsubscriptions.Subscription
