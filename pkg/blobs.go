@@ -9,6 +9,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
+var (
+	publicNetworkAccess = "nil"
+	encrypted           = false
+)
+
 func AzBlobs(AzCred *azidentity.DefaultAzureCredential) error {
 	// cred, _ := internal.GetCredential()
 
@@ -35,6 +40,8 @@ func AzBlobs(AzCred *azidentity.DefaultAzureCredential) error {
 			for _, v := range page.Value {
 				if v.Properties.PublicNetworkAccess != nil {
 					fmt.Printf("%v | %v | %v \n", *v.Name, *v.Properties.NetworkRuleSet.DefaultAction, *v.Properties.PublicNetworkAccess)
+				} else {
+					fmt.Printf("%v | %v | %v \n", *v.Name, *v.Properties.NetworkRuleSet.DefaultAction, publicNetworkAccess)
 				}
 			}
 
