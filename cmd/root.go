@@ -40,12 +40,12 @@ var (
 		},
 	}
 
-	AzBlobsCmd = &cobra.Command{
-		Use:     "blobs [-s | --subscrition-id subscriptionID]",
-		Aliases: []string{},
+	AzStorageAccountCmd = &cobra.Command{
+		Use:     "storage-account [-s | --subscrition-id subscriptionID]",
+		Aliases: []string{"sa"},
 		Long: `Get all blobs that the given account has access to.
-        Specifying a subscription ID will get the blobs only those tenants`,
-		Short: "Get all blobs",
+        Specifying a subscription ID will get the storage accounts in only those subscription`,
+		Short: "Get all Storage Accounts",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("getting blobs...")
 			err := pkg.AzBlobs(AzAuth)
@@ -53,6 +53,20 @@ var (
 				log.Fatal(err)
 			}
 			// err := pkg.GetBl
+		},
+	}
+
+	AzKeyvaultCmd = &cobra.Command{
+		Use:     "keyvault [-s | subscription-id --subscriptionID] [-k | --keyvault-id keyvaultID]",
+		Aliases: []string{"kv"},
+		Long:    `Get all keyvaults that the given account has access to. Specifying a subscription will only get the keyvaults in that subscription`,
+		Short:   "Get all keyvaults",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("getting keyvaults...")
+			err := pkg.AzKeyVaults(AzAuth)
+			if err != nil {
+				log.Fatal(err)
+			}
 		},
 	}
 )
@@ -74,6 +88,7 @@ func init() {
 	rootCmd.AddCommand(
 		AzTenantsCmd,
 		AzSubscriptionsCmd,
-		AzBlobsCmd,
+		AzStorageAccountCmd,
+		AzKeyvaultCmd,
 	)
 }
