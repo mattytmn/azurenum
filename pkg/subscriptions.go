@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
-	"github.com/mattytmn/azurenum/internal"
 )
 
 // func main() {
@@ -29,11 +29,11 @@ import (
 //	GetSubscriptions()
 //}
 
-func GetTenants() []*armsubscriptions.TenantIDDescription {
-	cred, _ := internal.GetCredential()
+func GetTenants(AzCred *azidentity.DefaultAzureCredential) []*armsubscriptions.TenantIDDescription {
+	// cred, _ := internal.GetCredential()
 	// var result armsubscription.TenantIDDescription
 	// ctx := context.Background()
-	clientFactory, err := armsubscriptions.NewClientFactory(cred, nil)
+	clientFactory, err := armsubscriptions.NewClientFactory(AzCred, nil)
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
@@ -54,12 +54,11 @@ func GetTenants() []*armsubscriptions.TenantIDDescription {
 	return result
 }
 
-func GetSubscriptions(AzSubscription string) []*armsubscriptions.Subscription {
-	fmt.Println(AzSubscription)
-	cred, _ := internal.GetCredential()
+func GetSubscriptions(AzCred *azidentity.DefaultAzureCredential) []*armsubscriptions.Subscription {
+	// cred, _ := internal.GetCredential()
 	ctx := context.TODO()
 	var result []*armsubscriptions.Subscription
-	clientFactory, err := armsubscriptions.NewClientFactory(cred, nil)
+	clientFactory, err := armsubscriptions.NewClientFactory(AzCred, nil)
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
@@ -70,7 +69,7 @@ func GetSubscriptions(AzSubscription string) []*armsubscriptions.Subscription {
 			log.Fatalf("failed to advance page: %v", err)
 		}
 		for _, v := range page.Value {
-			fmt.Printf("%v \n", *v.DisplayName)
+			fmt.Printf("%v \n", *v.SubscriptionID)
 			result = append(result, v)
 		}
 	}
