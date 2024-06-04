@@ -5,24 +5,10 @@ import (
 	"fmt"
 	"log"
 
-<<<<<<< HEAD
-=======
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
->>>>>>> feature/keyvault
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
-<<<<<<< HEAD
-func AzBlobs() error {
-	cred, _ := internal.GetCredential()
-
-	subscriptions := GetSubscriptions("")
-	for _, sub := range subscriptions {
-		subscriptionId := *sub.SubscriptionID
-		clientFactory, err := armstorage.NewClientFactory(subscriptionId, cred, nil)
-		if err != nil {
-			log.Fatalf("Error occurred in Blobs... %v", err)
-=======
 var (
 	publicNetworkAccess = "nil"
 	encrypted           = false
@@ -39,19 +25,12 @@ func AzBlobs(AzCred *azidentity.DefaultAzureCredential) error {
 		clientFactory, err := armstorage.NewClientFactory(subscriptionId, AzCred, nil)
 		if err != nil {
 			log.Fatalf("failed to create client: %v \n", err)
->>>>>>> feature/keyvault
 		}
 		pager := clientFactory.NewAccountsClient().NewListPager(nil)
 		ctx := context.TODO()
 		for pager.More() {
 			page, err := pager.NextPage(ctx)
 			if err != nil {
-<<<<<<< HEAD
-				return err
-			}
-			for _, v := range page.Value {
-				fmt.Printf("%v \n", *v.Name)
-=======
 				log.Printf("Error occurred getting blobs for subscription... %v", err)
 
 				// Go to the next subscription if an error or no storage accounts are returned
@@ -64,7 +43,6 @@ func AzBlobs(AzCred *azidentity.DefaultAzureCredential) error {
 				} else {
 					fmt.Printf("%v | %v | %v \n", *v.Name, *v.Properties.NetworkRuleSet.DefaultAction, publicNetworkAccess)
 				}
->>>>>>> feature/keyvault
 			}
 
 		}
