@@ -28,12 +28,12 @@ var (
 	}
 
 	AzSubscriptionsCmd = &cobra.Command{
-		Use:     "subscriptions [-s | --subscrition-id subscriptionID]",
+		Use:     "subscriptions [-s | --subscrition subscriptionID]",
 		Aliases: []string{"subs"},
 		Long:    `Get all available Azure subscriptions and display names`,
 		Short:   "Get all subscriptions",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := pkg.GetSubscriptions(AzAuth)
+			err := pkg.OutputSubscriptions(AzAuth)
 			if err != nil {
 				log.Fatalf("An error occurred: %v", err)
 			}
@@ -41,14 +41,14 @@ var (
 	}
 
 	AzStorageAccountCmd = &cobra.Command{
-		Use:     "storage-account [-s | --subscription-id subscriptionID]",
+		Use:     "storage-account [-s | --subscription subscriptionID]",
 		Aliases: []string{"sa"},
 		Long: `Get all blobs that the given account has access to.
         Specifying a subscription ID will get the storage accounts in only those subscription`,
 		Short: "Get all Storage Accounts",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Enumerating blobs...")
-			err := pkg.AzBlobs(AzAuth)
+			err := pkg.AzStorageAccount(AzAuth, AzSubscription)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -58,7 +58,7 @@ var (
 	KeyVaultListSecrets      bool
 	KeyvaultListCertificates bool
 	AzKeyvaultCmd            = &cobra.Command{
-		Use:     "keyvault [-s | subscription-id --subscriptionID] [-k | --keyvault-id keyvaultID]",
+		Use:     "keyvault [-s | subscription --subscriptionID] [-k | --keyvault-id keyvaultID]",
 		Aliases: []string{"kv"},
 		Long:    `Get all keyvaults that the given account has access to. Specifying a subscription will only get the keyvaults in that subscription`,
 		Short:   "Get all keyvaults",
@@ -72,7 +72,7 @@ var (
 	}
 
 	AzResourceGroupCmd = &cobra.Command{
-		Use:     "resource-groups [-s | --subscription-id subscriptionID]",
+		Use:     "resource-groups [-s | --subscription subscriptionID]",
 		Aliases: []string{"rg"},
 		Long:    `Get all resource groups`,
 		Short:   "Get all resource groups",
@@ -85,7 +85,7 @@ var (
 		},
 	}
 	AzKVSecretsCmd = &cobra.Command{
-		Use:     "secrets [-s | --subscription-id subscriptionID]",
+		Use:     "secrets [-s | --subscription subscriptionID]",
 		Aliases: []string{"rg"},
 		Long:    `Get all secrets in Azure Key Vault`,
 		Short:   "Get all secrets",

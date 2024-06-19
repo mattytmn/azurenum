@@ -1,12 +1,35 @@
 package internal
 
+import (
+	"os"
+
+	"github.com/aquasecurity/table"
+)
+
 var (
 	resultTable string
-	tableEntry  []string
+	tableHead   []string
+	tableBody   [][]string
 )
 
 // Options for various output formats
-func PrintResultAsTable() {}
+
+type TableClient struct {
+	Header []string
+	Body   [][]string
+}
+
+// Create new struct for table
+func (t *TableClient) PrintResultAsTable(tblEntry TableClient) {
+	// headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	tbl := table.New(os.Stdout)
+	tbl.SetHeaders(tblEntry.Header...)
+	for _, r := range tblEntry.Body {
+		tbl.AddRow(r...)
+	}
+	tbl.Render()
+
+}
 
 func PrintResultAsJson() {}
 

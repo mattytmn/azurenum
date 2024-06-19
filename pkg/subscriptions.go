@@ -137,6 +137,15 @@ func getSubscriptionsForTenant(AzCred *azidentity.DefaultAzureCredential, AzTena
 	return tenantValid, nil
 }
 
+func OutputSubscriptions(AzCred *azidentity.DefaultAzureCredential) error {
+	subs := GetSubscriptions(AzCred)
+	fmt.Println("Printing subscriptions")
+	for _, s := range subs {
+		fmt.Printf("%v | %v | %v | %v\n", *s.DisplayName, *s.SubscriptionID, *s.TenantID, *s.ID)
+	}
+	return nil
+}
+
 // client, err := armsubscription.NewSubscriptionsClient(cred, nil)
 // if err != nil {
 // 	// TODO: Handle Error
