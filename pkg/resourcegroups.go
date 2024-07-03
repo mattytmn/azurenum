@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -25,10 +24,10 @@ func GetResourceGroups(AzCred *azidentity.DefaultAzureCredential, AzSubscription
 			log.Fatalf("Failed to advance page: %v", err)
 		}
 		resourceGroupsInSub = append(resourceGroupsInSub, page.Value...)
-		for _, v := range page.Value {
-			fmt.Printf("%v \n", *v.Name)
+		// for _, v := range page.Value {
+		//	fmt.Printf("%v \n", *v.Name)
 
-		}
+		// }
 	}
 	return resourceGroupsInSub
 }
