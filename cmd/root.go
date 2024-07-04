@@ -57,6 +57,7 @@ var (
 	}
 	KeyVaultListSecrets      bool
 	KeyvaultListCertificates bool
+	ExpiryDays               int
 	AzKeyvaultCmd            = &cobra.Command{
 		Use:     "keyvault [-s | subscription --subscriptionID] [-k | --keyvault-id keyvaultID]",
 		Aliases: []string{"kv"},
@@ -64,7 +65,7 @@ var (
 		Short:   "Get all keyvaults",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Enumerating keyvaults...")
-			err := pkg.AzKeyVaults(AzAuth, AzTenant, AzSubscription, KeyVaultListSecrets, KeyvaultListCertificates)
+			err := pkg.AzKeyVaults(AzAuth, AzTenant, AzSubscription, KeyVaultListSecrets, KeyvaultListCertificates, ExpiryDays)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -85,7 +86,7 @@ var (
 		},
 	}
 	AzKVSecretsCmd = &cobra.Command{
-		Use:     "secrets [-s | --subscription subscriptionID]",
+		Use:     "secrets [-s | --subscription subscriptionID] [-d | --days numberOfDays]",
 		Aliases: []string{"rg"},
 		Long:    `Get all secrets in Azure Key Vault`,
 		Short:   "Get all secrets",
@@ -117,7 +118,7 @@ func init() {
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyVaultListSecrets, "secrets", "x", false, "Only list secrets for key vault")
 
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyvaultListCertificates, "certificates", "c", false, "Only list certificates for key vault")
-
+	AzKeyvaultCmd.Flags().IntVarP(&ExpiryDays, "days", "d", 30, "Number of days to secret expiry")
 	rootCmd.AddCommand(
 		AzTenantsCmd,
 		AzSubscriptionsCmd,

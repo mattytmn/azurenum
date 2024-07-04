@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 	"github.com/mattytmn/azurenum/internal"
+	"github.com/schollz/progressbar/v3"
 )
 
 // Gets all keyvaults in Azure
 // TODO check for no keyvaults in subscription
 // Entry method to enumerate keyvaults
-func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzKvSecrets, AzKvCerts bool) error {
+func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzKvSecrets, AzKvCerts bool, AzExpiryDays int) error {
 
 	// var subscriptions []*armsubscriptions.
 	// Subscription given
@@ -25,7 +27,7 @@ func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscr
 
 		if isValid {
 			fmt.Println("ID is valid, fetching keyvaults.. ")
-			fmt.Println(*subId.DisplayName)
+			// fmt.Println(*subId.DisplayName)
 			sub := []*armsubscriptions.Subscription{subId}
 
 			// If secret flag specified, get secrets for sub
@@ -127,7 +129,7 @@ func AzKeyVaultSecrets(AzCred *azidentity.DefaultAzureCredential, AzTenantID, Az
 // Should be used as an input to get secrets, certs etc
 func getKeyVaultsForSubscriptionSlice(AzCred *azidentity.DefaultAzureCredential, subscription []*armsubscriptions.Subscription) (keyvaults []*armkeyvault.Resource) {
 	outTable := internal.TableClient{
-		Header: []string{"Name"},
+		Header: []string{"Name", "URL"},
 	}
 	for _, sub := range subscription {
 		//fmt.Printf("Getting keyvaults in subcription: %v | %v\n", *sub.DisplayName, *sub.SubscriptionID)
@@ -148,6 +150,8 @@ func getKeyVaultsForSubscriptionSlice(AzCred *azidentity.DefaultAzureCredential,
 			for _, v := range page.Value {
 				keyvaults = append(keyvaults, page.Value...)
 				fmt.Printf("%v \n", *v.Name)
+				outTable.Body = append(outTable.Body, []string{
+					*v.Name, *v.ID})
 			}
 		}
 	}
@@ -192,14 +196,17 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 	// 	subscriptionId := *sub.SubscriptionID
 	secretsCounter := 0
 	resourceGroups := GetResourceGroups(AzCred, subscription)
+	rgBar := progressbar.Default(int64(len(resourceGroups)), "Resource Groups")
+	tbl := internal.TableClient{
+		Header: []string{"Name", "Expires", "URL"},
+	}
 	//_, subs := getSubscriptionFromId(AzCred, subscription)
 
 	// get all resource groups and iterate through
 	for _, rg := range resourceGroups {
-
+		rgBar.Add(1)
 		// fmt.Printf("Getting resource group key vaults: %v \n", *rg.Name)
 		keyvaults := getKeyVaultsForSubscription(AzCred, subscription, *rg.Name)
-
 		ctx := context.TODO()
 		clientFactory, err := armkeyvault.NewClientFactory(subscription, AzCred, nil)
 
@@ -209,7 +216,7 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 
 		for _, kv := range keyvaults {
 			pager := clientFactory.NewSecretsClient().NewListPager(*rg.Name, *kv.Name, nil)
-			fmt.Printf("%v \n", *rg.Name)
+			//fmt.Printf("%v \n", *rg.Name)
 			for pager.More() {
 				page, err := pager.NextPage(ctx)
 				if err != nil {
@@ -218,9 +225,17 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 				for _, s := range page.Value {
 					secretsCounter++
 					if s.Properties.Attributes.Expires != nil {
-						fmt.Printf("Secret name: %v | Secret expiry: %v | Secret URI: %v \n", *s.Name, *s.Properties.Attributes.Expires, *s.ID)
+						if s.Properties.Attributes.Expires.Before(time.Now().AddDate(0, 1, 0)) || s.Properties.Attributes.Expires.Before(time.Now()) {
+							//fmt.Printf("Secret name: %v | Secret expiry: %v | Secret URI: %v \n", *s.Name, *s.Properties.Attributes.Expires, *s.ID)
+							tbl.Body = append(tbl.Body, []string{
+								*s.Name,
+								(*s.Properties.Attributes.Expires).String(),
+								*s.ID,
+							})
+						}
+
 					} else {
-						fmt.Printf("Secret name: %v | Secret enabled: %v \n", *s.Name, *s.Properties.Attributes.Enabled)
+						//fmt.Printf("Secret name: %v | Secret enabled: %v \n", *s.Name, *s.Properties.Attributes.Enabled)
 
 					}
 				}
@@ -229,6 +244,7 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 		}
 
 	}
+	tbl.PrintResultAsTable(tbl)
 	return nil
 }
 

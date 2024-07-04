@@ -27,6 +27,7 @@ func (t *TableClient) PrintResultAsTable(tblEntry TableClient) {
 	for _, r := range tblEntry.Body {
 		tbl.AddRow(r...)
 	}
+
 	tbl.Render()
 
 }
