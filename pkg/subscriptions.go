@@ -13,7 +13,7 @@ import (
 //	fmt.Println("fetching azure resources")
 // cred, err := azidentity.NewDefaultAzureCredential(nil)
 // if err != nil {
-// 	// TODO: andl
+// 	// TODO:
 // 	fmt.Println("Auth error")
 // } else {
 // 	fmt.Println(&cred)
@@ -28,6 +28,15 @@ import (
 //	}
 //	GetSubscriptions()
 //}
+
+func ListTenants(AzCred *azidentity.DefaultAzureCredential) (err error) {
+	tenants := GetTenants(AzCred)
+
+	for _, v := range tenants {
+		fmt.Printf("%v %v \n", *v.TenantID, *v.DisplayName)
+	}
+	return nil
+}
 
 func GetTenants(AzCred *azidentity.DefaultAzureCredential) []*armsubscriptions.TenantIDDescription {
 	// cred, _ := internal.GetCredential()
@@ -46,10 +55,11 @@ func GetTenants(AzCred *azidentity.DefaultAzureCredential) []*armsubscriptions.T
 		if err != nil {
 			log.Fatalf("failed to advance page: %v", err)
 		}
-		for _, v := range page.Value {
-			fmt.Printf("%v \n", *v.DefaultDomain)
-			result = append(result, v)
-		}
+		result = append(result, page.Value...)
+		// for _, v := range page.Value {
+		//	fmt.Printf("%v \n", *v.DefaultDomain)
+		//	result = append(result, v)
+		//	}
 	}
 	return result
 }
@@ -68,13 +78,72 @@ func GetSubscriptions(AzCred *azidentity.DefaultAzureCredential) []*armsubscript
 		if err != nil {
 			log.Fatalf("failed to advance page: %v", err)
 		}
-		for _, v := range page.Value {
-			fmt.Printf("%v \n", *v.SubscriptionID)
-			result = append(result, v)
-		}
+		// for _, v := range page.Value {
+		// 	fmt.Printf("%v %v\n", *v.SubscriptionID, *v.DisplayName)
+		// 	result = append(result, v)
+		// }
+		result = append(result, page.Value...)
 	}
 
 	return result
+}
+
+// Given a Subscription ID or name, verify that it exists and return
+func getSubscriptionFromId(AzCred *azidentity.DefaultAzureCredential, AzSubscriptionId string) (isFound bool, subId *armsubscriptions.Subscription) {
+	isFound = false
+	subscriptions := GetSubscriptions(AzCred)
+
+	for _, sub := range subscriptions {
+		if *sub.DisplayName == AzSubscriptionId {
+			isFound = true
+			return isFound, sub
+
+		} else if *sub.SubscriptionID == AzSubscriptionId {
+			isFound = true
+			return isFound, sub
+		}
+
+	}
+	return
+}
+
+// Get all subs with matching tenantID, OR find a function that takes Tenant as an argument
+func getSubscriptionsForTenant(AzCred *azidentity.DefaultAzureCredential, AzTenantId string) (tenantValid bool, subs []*armsubscriptions.Subscription) {
+	tenants := GetTenants(AzCred)
+
+	tenantValid = false
+
+	for _, t := range tenants {
+		if *t.DisplayName == AzTenantId {
+			tenantValid = true
+			break
+		} else if *t.TenantID == AzTenantId {
+			tenantValid = true
+			break
+		}
+	}
+	if tenantValid {
+		subs := GetSubscriptions(AzCred)
+
+		for _, s := range subs {
+			if *s.TenantID == AzTenantId {
+				subs = append(subs, s)
+			}
+			//fmt.Println(*s.TenantID)
+		}
+		return tenantValid, subs
+
+	}
+	return tenantValid, nil
+}
+
+func OutputSubscriptions(AzCred *azidentity.DefaultAzureCredential) error {
+	subs := GetSubscriptions(AzCred)
+	fmt.Println("Printing subscriptions")
+	for _, s := range subs {
+		fmt.Printf("%v | %v | %v | %v\n", *s.DisplayName, *s.SubscriptionID, *s.TenantID, *s.ID)
+	}
+	return nil
 }
 
 // client, err := armsubscription.NewSubscriptionsClient(cred, nil)
