@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	AzTenant       string
-	AzSubscription string
-	AzAuth, _      = internal.GetCredential()
+	AzTenant          string
+	AzSubscription    string
+	TeamsNotification string
+	AzAuth, _         = internal.GetCredential()
 
 	AzTenantsCmd = &cobra.Command{
 		Use:     "tenants",
@@ -71,6 +72,13 @@ var (
 			}
 		},
 	}
+	// External attack surface management monitor
+	AzEasmCmd = &cobra.Command{
+		Use:     "easm",
+		Aliases: []string{"m"},
+		Long:    `Get all externally exposed resources and associated URIs`,
+		Short:   "EASM module",
+	}
 
 	AzResourceGroupCmd = &cobra.Command{
 		Use:     "resource-groups [-s | --subscription subscriptionID]",
@@ -114,7 +122,7 @@ func init() {
 	// Flags
 	rootCmd.PersistentFlags().StringVarP(&AzSubscription, "subscription", "s", "", "Subscription ID")
 	rootCmd.PersistentFlags().StringVarP(&AzTenant, "tenant", "t", "", "Tenant name or ID")
-
+	rootCmd.PersistentFlags().StringVarP(&TeamsNotification, "teams", "", "", "Send result to teams")
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyVaultListSecrets, "secrets", "x", false, "Only list secrets for key vault")
 
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyvaultListCertificates, "certificates", "c", false, "Only list certificates for key vault")
@@ -126,5 +134,4 @@ func init() {
 		AzKeyvaultCmd,
 		AzResourceGroupCmd,
 	)
-
 }
