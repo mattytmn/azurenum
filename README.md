@@ -10,7 +10,7 @@ A command line tool for enumerating and monitoring Azure environments for securi
 * Output as a table or json
 
 ## Usage
-```
+```yaml
 Usage:
   azurenum [command]
 
@@ -30,4 +30,13 @@ Flags:
   -t, --tenant string         Tenant name or ID
 
 Use "azurenum [command] --help" for more information about a command.
+```
+
+## Installation
+```sh
+go install -v github.com/mattytmn/azurenum@latest
+```
+## Running
+```sh
+azurenum -h
 ```
