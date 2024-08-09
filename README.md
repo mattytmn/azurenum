@@ -36,6 +36,7 @@ Use "azurenum [command] --help" for more information about a command.
 ```sh
 go install -v github.com/mattytmn/azurenum@latest
 ```
+
 ## Running
 ```sh
 azurenum -h
