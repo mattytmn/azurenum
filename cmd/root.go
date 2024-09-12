@@ -42,7 +42,7 @@ var (
 	}
 
 	AzStorageAccountCmd = &cobra.Command{
-		Use:     "storage-account [-s | --subscription subscriptionID]",
+		Use:     "storage-account",
 		Aliases: []string{"sa"},
 		Long: `Get all blobs that the given account has access to.
         Specifying a subscription ID will get the storage accounts in only those subscription`,
@@ -60,7 +60,7 @@ var (
 	KeyvaultListCertificates bool
 	ExpiryDays               int
 	AzKeyvaultCmd            = &cobra.Command{
-		Use:     "keyvault [-s | subscription --subscriptionID] [-k | --keyvault-id keyvaultID]",
+		Use:     "keyvault",
 		Aliases: []string{"kv"},
 		Long:    `Get all keyvaults that the given account has access to. Specifying a subscription will only get the keyvaults in that subscription`,
 		Short:   "Get all keyvaults",
@@ -81,7 +81,7 @@ var (
 	}
 
 	AzResourceGroupCmd = &cobra.Command{
-		Use:     "resource-groups [-s | --subscription subscriptionID]",
+		Use:     "resource-groups",
 		Aliases: []string{"rg"},
 		Long:    `Get all resource groups`,
 		Short:   "Get all resource groups",
@@ -94,13 +94,26 @@ var (
 		},
 	}
 	AzKVSecretsCmd = &cobra.Command{
-		Use:     "secrets [-s | --subscription subscriptionID] [-d | --days numberOfDays]",
+		Use:     "secrets",
 		Aliases: []string{"rg"},
 		Long:    `Get all secrets in Azure Key Vault`,
 		Short:   "Get all secrets",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Getting resource groups...")
 			err := pkg.GetKeyVaultSecretsForSubscription(AzAuth, AzSubscription)
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	AzContainerAppsCmd = &cobra.Command{
+		Use:     "container-apps",
+		Aliases: []string{"ca"},
+		Short:   "Get all container apps",
+		Long:    `Get all container apps and associated URLs`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Getting container apps...")
+			err := pkg.AzContainerApps(AzAuth, AzTenant, AzSubscription)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -133,5 +146,6 @@ func init() {
 		AzStorageAccountCmd,
 		AzKeyvaultCmd,
 		AzResourceGroupCmd,
+		AzContainerAppsCmd,
 	)
 }
