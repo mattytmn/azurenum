@@ -112,7 +112,7 @@ var (
 		Short:   "Get all container apps",
 		Long:    `Get all container apps and associated URLs`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Getting container apps...")
+			fmt.Println("Getting container app...")
 			err := pkg.AzContainerApps(AzAuth, AzTenant, AzSubscription)
 			if err != nil {
 				log.Fatal(err)

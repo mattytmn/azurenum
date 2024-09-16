@@ -28,6 +28,8 @@ func AzContainerApps(AzCred *azidentity.DefaultAzureCredential, AzTenantId, AzSu
 	return nil
 }
 
+// TODO
+// Get network policy
 func getContainerAppsForSub(azCred *azidentity.DefaultAzureCredential, subs []*armsubscriptions.Subscription) {
 	for _, sub := range subs {
 		subId := *sub.SubscriptionID
