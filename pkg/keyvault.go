@@ -16,7 +16,7 @@ import (
 // Gets all keyvaults in Azure
 // TODO check for no keyvaults in subscription
 // Entry method to enumerate keyvaults
-func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzKvSecrets, AzKvCerts bool, AzExpiryDays int) error {
+func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzKvSecrets, AzKvCerts, notify bool, AzExpiryDays int) error {
 
 	// var subscriptions []*armsubscriptions.
 	// Subscription given
@@ -34,7 +34,7 @@ func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscr
 			// else only get keyvaults
 			if AzKvSecrets {
 				fmt.Println("Getting secrets in subscription...")
-				GetKeyVaultSecretsForSubscription(AzCred, *subId.SubscriptionID)
+				GetKeyVaultSecretsForSubscription(AzCred, *subId.SubscriptionID, notify)
 
 			} else {
 				getKeyVaultsForSubscriptionSlice(AzCred, sub)
@@ -60,7 +60,7 @@ func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscr
 		// For each subscription get keyvault secrets
 		if AzKvSecrets {
 			for _, s := range subscriptions {
-				GetKeyVaultSecretsForSubscription(AzCred, *s.SubscriptionID)
+				GetKeyVaultSecretsForSubscription(AzCred, *s.SubscriptionID, notify)
 			}
 		} else {
 			getKeyVaultsForSubscriptionSlice(AzCred, subscriptions)
@@ -190,7 +190,7 @@ func getKeyVaultsForSubscription(AzCred *azidentity.DefaultAzureCredential, subs
 // Given a list of keyvaults, return secrets
 // TODO
 // Make this run concurrently to speed up getting multiple secrets for multiple keyvaults
-func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential, subscription string) (secrets []*armkeyvault.Secret) {
+func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential, subscription string, notify bool) (secrets []*armkeyvault.Secret) {
 	// for _, sub := range subscription {
 	// 	fmt.Printf("Getting secrets in Keyvault: %v | %v\n", *sub.DisplayName, *sub.SubscriptionID)
 	// 	subscriptionId := *sub.SubscriptionID

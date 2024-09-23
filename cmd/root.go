@@ -12,7 +12,7 @@ import (
 var (
 	AzTenant          string
 	AzSubscription    string
-	TeamsNotification string
+	TeamsNotification bool
 	AzAuth, _         = internal.GetCredential()
 
 	AzTenantsCmd = &cobra.Command{
@@ -66,7 +66,7 @@ var (
 		Short:   "Get all keyvaults",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Enumerating keyvaults...")
-			err := pkg.AzKeyVaults(AzAuth, AzTenant, AzSubscription, KeyVaultListSecrets, KeyvaultListCertificates, ExpiryDays)
+			err := pkg.AzKeyVaults(AzAuth, AzTenant, AzSubscription, KeyVaultListSecrets, KeyvaultListCertificates, TeamsNotification, ExpiryDays)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -100,7 +100,7 @@ var (
 		Short:   "Get all secrets",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Getting resource groups...")
-			err := pkg.GetKeyVaultSecretsForSubscription(AzAuth, AzSubscription)
+			err := pkg.GetKeyVaultSecretsForSubscription(AzAuth, AzSubscription, TeamsNotification)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -135,7 +135,8 @@ func init() {
 	// Flags
 	rootCmd.PersistentFlags().StringVarP(&AzSubscription, "subscription", "s", "", "Subscription ID")
 	rootCmd.PersistentFlags().StringVarP(&AzTenant, "tenant", "t", "", "Tenant name or ID")
-	rootCmd.PersistentFlags().StringVarP(&TeamsNotification, "teams", "", "", "Send result to teams")
+	rootCmd.PersistentFlags().BoolVarP(&TeamsNotification, "notify", "n", false, "Send result notification to teams")
+
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyVaultListSecrets, "secrets", "x", false, "Only list secrets for key vault")
 
 	AzKeyvaultCmd.Flags().BoolVarP(&KeyvaultListCertificates, "certificates", "c", false, "Only list certificates for key vault")
