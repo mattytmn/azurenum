@@ -95,7 +95,7 @@ var (
 	}
 	AzKVSecretsCmd = &cobra.Command{
 		Use:     "secrets",
-		Aliases: []string{"rg"},
+		Aliases: []string{"sec"},
 		Long:    `Get all secrets in Azure Key Vault`,
 		Short:   "Get all secrets",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -148,5 +148,6 @@ func init() {
 		AzKeyvaultCmd,
 		AzResourceGroupCmd,
 		AzContainerAppsCmd,
+		AzKVSecretsCmd,
 	)
 }
