@@ -16,6 +16,28 @@ import (
 // Gets all keyvaults in Azure
 // TODO check for no keyvaults in subscription
 // Entry method to enumerate keyvaults
+
+// Template for headers
+var CellHeaderTemplate internal.CellItem = internal.CellItem{
+
+	Wrap:   true,
+	Type:   "TextBlock",
+	Weight: "Bolder",
+	Size:   "ExtraLarge",
+	Style:  "heading",
+}
+
+var CellItemTeamplate internal.CellItem = internal.CellItem{
+	Type:   "TextBlock",
+	Weight: "default",
+	Size:   "small",
+	Style:  "default",
+	Wrap:   true,
+}
+
+var SecretHeadersShort []string = []string{"Name", "Expiry", "URL"}
+var SecretHeadersLong []string = []string{"Keyvault", "Name", "Expiry", "URL", "Subscription"}
+
 func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzKvSecrets, AzKvCerts, notify bool, AzExpiryDays int) error {
 
 	// var subscriptions []*armsubscriptions.
@@ -200,8 +222,9 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 	tbl := internal.TableClient{
 		Header: []string{"Name", "Expires", "URL"},
 	}
+	headers := []string{"Name", "Expires", "URL"}
 	//_, subs := getSubscriptionFromId(AzCred, subscription)
-
+	rows := [][]string{}
 	// get all resource groups and iterate through
 	for _, rg := range resourceGroups {
 		rgBar.Add(1)
@@ -227,11 +250,15 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 					if s.Properties.Attributes.Expires != nil {
 						if s.Properties.Attributes.Expires.Before(time.Now().AddDate(0, 1, 0)) || s.Properties.Attributes.Expires.Before(time.Now()) {
 							//fmt.Printf("Secret name: %v | Secret expiry: %v | Secret URI: %v \n", *s.Name, *s.Properties.Attributes.Expires, *s.ID)
-							tbl.Body = append(tbl.Body, []string{
+							secretProperties := []string{
 								*s.Name,
 								(*s.Properties.Attributes.Expires).String(),
 								*s.ID,
-							})
+							}
+							tbl.Body = append(tbl.Body, secretProperties)
+
+							rows = append(rows, secretProperties)
+
 						}
 
 					} else {
@@ -244,7 +271,13 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 		}
 
 	}
+
 	tbl.PrintResultAsTable(tbl)
+	allRows, err := internal.NotifyFormat(headers, rows)
+	if err != nil {
+		log.Fatalf("failed to convert to Teams format... %v", err)
+	}
+	internal.Notify(allRows)
 	return nil
 }
 
