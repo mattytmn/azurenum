@@ -42,7 +42,7 @@ var CellHeaderTemplate CellItem = CellItem{
 	Wrap:   true,
 	Type:   "TextBlock",
 	Weight: "Bolder",
-	Size:   "ExtraLarge",
+	Size:   "Large",
 	Style:  "heading",
 }
 
@@ -54,7 +54,7 @@ var CellItemTemplate CellItem = CellItem{
 	Wrap:   true,
 }
 
-func Notify(rows []TableRow) {
+func Notify(headers []string, items [][]string) error {
 
 	jsonTemplateFile := "teams_file"
 
@@ -63,6 +63,10 @@ func Notify(rows []TableRow) {
 	if err != nil {
 		log.Fatalf("Failed to open json file... %v", err)
 	}
+	rows, err := formatNotifyRows(headers, items)
+	if err != nil {
+		log.Fatalf("failed to format data... %v", err)
+	}
 
 	postBody, err := createTeamsMessage(jsonBody, rows)
 	if err != nil {
@@ -70,6 +74,7 @@ func Notify(rows []TableRow) {
 	}
 	fmt.Printf("%s \n", postBody)
 	sendTeamsMessage(teamsUrl, postBody)
+	return nil
 }
 
 func sendTeamsMessage(url string, postBody []byte) error {
@@ -116,8 +121,6 @@ func openJsonFile(filename string) (map[string]any, error) {
 // Takes in JSON template and adds custom headers and rows to table
 func createTeamsMessage(jsonObj map[string]any, rows []TableRow) (jsonMarshal []byte, err error) {
 
-	// Get reference to rows
-
 	attachmentsSlice, _ := jsonObj["attachments"].([]any)
 	attachmentsObj, _ := attachmentsSlice[0].(map[string]any)
 	content, _ := attachmentsObj["content"].(map[string]any)
@@ -136,7 +139,7 @@ func createTeamsMessage(jsonObj map[string]any, rows []TableRow) (jsonMarshal []
 
 // Takes the headers and list of lists with row values
 // return final tablerows to be inserted to final json payload
-func NotifyFormat(headers []string, items [][]string) (allRows []TableRow, err error) {
+func formatNotifyRows(headers []string, items [][]string) (allRows []TableRow, err error) {
 
 	// Create headers and add to allRows
 	// Only multiple cells required

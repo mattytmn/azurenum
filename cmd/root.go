@@ -100,7 +100,7 @@ var (
 		Short:   "Get all secrets",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Getting resource groups...")
-			err := pkg.GetKeyVaultSecretsForSubscription(AzAuth, AzSubscription, TeamsNotification)
+			err := pkg.AzKeyVaultSecrets(AzAuth, AzSubscription, AzTenant, ExpiryDays, TeamsNotification)
 			if err != nil {
 				log.Fatal(err)
 			}
