@@ -17,7 +17,8 @@ import (
 // TODO check for no keyvaults in subscription
 // Entry method to enumerate keyvaults
 
-// Template for headers
+// Template for header and data rows
+
 var CellHeaderTemplate internal.CellItem = internal.CellItem{
 
 	Wrap:   true,
@@ -56,7 +57,7 @@ func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscr
 			// else only get keyvaults
 			if AzKvSecrets {
 				fmt.Println("Getting secrets in subscription...")
-				GetKeyVaultSecretsForSubscription(AzCred, *subId.SubscriptionID, notify)
+				GetKeyVaultSecretsForSubscription(AzCred, *subId.SubscriptionID, notify, AzExpiryDays)
 
 			} else {
 				getKeyVaultsForSubscriptionSlice(AzCred, sub)
@@ -82,41 +83,20 @@ func AzKeyVaults(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscr
 		// For each subscription get keyvault secrets
 		if AzKvSecrets {
 			for _, s := range subscriptions {
-				GetKeyVaultSecretsForSubscription(AzCred, *s.SubscriptionID, notify)
+				GetKeyVaultSecretsForSubscription(AzCred, *s.SubscriptionID, notify, AzExpiryDays)
 			}
 		} else {
 			getKeyVaultsForSubscriptionSlice(AzCred, subscriptions)
 		}
-		// for _, sub := range subscriptions {
-		// 	fmt.Printf("getting subscriptions for keyvault enum... \n")
-		// 	subscriptionId := *sub.SubscriptionID
-		// 	clientFactory, err := armkeyvault.NewClientFactory(subscriptionId, AzCred, nil)
-		// 	if err != nil {
-		// 		log.Fatalf("failed to create client: %v \n", err)
-		// 	}
-		// 	pager := clientFactory.NewVaultsClient().NewListPager(nil)
-		// 	ctx := context.TODO()
-
-		// 	for pager.More() {
-		// 		page, err := pager.NextPage(ctx)
-		// 		if err != nil {
-		// 			log.Fatalf("error occurred getting keyvaults... %v \n", err)
-		// 		}
-
-		// 		for _, v := range page.Value {
-		// 			fmt.Printf("%T \n", v)
-		// 			fmt.Printf("%T \n", *v)
-		// 		}
-		// 	}
-
-		// }
 	}
+	// TODO
+	// Checker for notify and table output, have all methods return same two arrays (headers and rows) and create output here from that
 
 	return nil
 }
 
 // Currently not used
-func AzKeyVaultSecrets(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string) error {
+func AzKeyVaultSecrets(AzCred *azidentity.DefaultAzureCredential, AzTenantID, AzSubscriptionID string, AzExpiryDays int, notfy bool) error {
 	if AzTenantID == "" && AzSubscriptionID != "" {
 		// verify ID exists
 		isValid, subId := getSubscriptionFromId(AzCred, AzSubscriptionID)
@@ -212,7 +192,7 @@ func getKeyVaultsForSubscription(AzCred *azidentity.DefaultAzureCredential, subs
 // Given a list of keyvaults, return secrets
 // TODO
 // Make this run concurrently to speed up getting multiple secrets for multiple keyvaults
-func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential, subscription string, notify bool) (secrets []*armkeyvault.Secret) {
+func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential, subscription string, notify bool, expiry int) (secrets []*armkeyvault.Secret) {
 	// for _, sub := range subscription {
 	// 	fmt.Printf("Getting secrets in Keyvault: %v | %v\n", *sub.DisplayName, *sub.SubscriptionID)
 	// 	subscriptionId := *sub.SubscriptionID
@@ -248,7 +228,7 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 				for _, s := range page.Value {
 					secretsCounter++
 					if s.Properties.Attributes.Expires != nil {
-						if s.Properties.Attributes.Expires.Before(time.Now().AddDate(0, 1, 0)) || s.Properties.Attributes.Expires.Before(time.Now()) {
+						if s.Properties.Attributes.Expires.Before(time.Now().AddDate(0, 0, expiry)) || s.Properties.Attributes.Expires.Before(time.Now()) {
 							//fmt.Printf("Secret name: %v | Secret expiry: %v | Secret URI: %v \n", *s.Name, *s.Properties.Attributes.Expires, *s.ID)
 							secretProperties := []string{
 								*s.Name,
@@ -273,11 +253,10 @@ func GetKeyVaultSecretsForSubscription(AzCred *azidentity.DefaultAzureCredential
 	}
 
 	tbl.PrintResultAsTable(tbl)
-	allRows, err := internal.NotifyFormat(headers, rows)
+	err := internal.Notify(headers, rows)
 	if err != nil {
 		log.Fatalf("failed to convert to Teams format... %v", err)
 	}
-	internal.Notify(allRows)
 	return nil
 }
 
