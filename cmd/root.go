@@ -119,6 +119,19 @@ var (
 			}
 		},
 	}
+	AzDatabaseCmd = &cobra.Command{
+		Use:     "database",
+		Aliases: []string{"db", "sql"},
+		Short:   "Get SQL server information",
+		Long:    `Get configuration information for SQL servers within the Azure tenancy`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Getting SQL Servers...")
+			err := pkg.AzDatabase(AzAuth, AzTenant, AzSubscription, TeamsNotification)
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
 )
 
 var rootCmd = &cobra.Command{
@@ -149,5 +162,6 @@ func init() {
 		AzResourceGroupCmd,
 		AzContainerAppsCmd,
 		AzKVSecretsCmd,
+		AzDatabaseCmd,
 	)
 }

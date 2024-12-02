@@ -1,4 +1,5 @@
 config.*
+!config.go
 .env
 .DS_Store
 *.json
